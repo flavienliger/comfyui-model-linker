@@ -33,3 +33,4 @@ A ComfyUI extension that helps users relink missing models in workflows using fu
 - **Fuzzy Matching**: Uses intelligent similarity scoring to find model files even with different naming
 - **Auto-Resolve**: One-click resolution for all perfect matches
 
+ 
