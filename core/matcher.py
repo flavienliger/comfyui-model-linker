@@ -98,9 +98,13 @@ def find_matches(
     """
     matches = []
     
+    # Normalize path separators in target_model based on current OS
+    # This ensures paths with \ vs / separators are treated as identical
+    target_model_normalized = os.path.normpath(target_model) if target_model else ''
+    
     # Extract just the filename from target_model (remove any subfolder paths)
     # target_model might be just a filename or might include subfolder paths
-    target_filename = os.path.basename(target_model)
+    target_filename = os.path.basename(target_model_normalized)
     
     # Normalize target filename once for exact match comparisons
     target_norm = normalize_filename(target_filename)
@@ -108,14 +112,43 @@ def find_matches(
     for candidate in candidate_models:
         # Get filename from candidate (prefer 'filename' key, fallback to extracting from 'path' or 'relative_path')
         candidate_filename = candidate.get('filename')
+        candidate_path = candidate.get('path', '') or candidate.get('relative_path', '')
         
         # If no filename key, try to extract from path or relative_path
         if not candidate_filename:
-            candidate_path = candidate.get('path', '') or candidate.get('relative_path', '')
             if candidate_path:
                 candidate_filename = os.path.basename(candidate_path)
         
         if not candidate_filename:
+            continue
+        
+        # Normalize candidate path separators based on current OS
+        # This ensures paths with \ vs / separators are treated as identical
+        candidate_path_normalized = os.path.normpath(candidate_path) if candidate_path else ''
+        candidate_relative_path = candidate.get('relative_path', '')
+        candidate_relative_path_normalized = os.path.normpath(candidate_relative_path) if candidate_relative_path else ''
+        
+        # Check if normalized paths are identical (100% match)
+        # This handles cases where paths differ only by separator (e.g., path/to/model vs path\to\model)
+        # Compare both absolute paths and relative paths
+        path_match = False
+        if candidate_path_normalized and target_model_normalized:
+            if candidate_path_normalized == target_model_normalized:
+                path_match = True
+        elif candidate_relative_path_normalized and target_model_normalized:
+            # Also check if relative path matches the target (which might be relative)
+            if candidate_relative_path_normalized == target_model_normalized:
+                path_match = True
+        
+        if path_match:
+            # Exact path match after normalization = 100% confidence
+            similarity = 1.0
+            matches.append({
+                'model': candidate,
+                'filename': candidate_filename,
+                'similarity': similarity,
+                'confidence': round(similarity * 100, 1)
+            })
             continue
         
         # Calculate similarity comparing just filenames (not paths)

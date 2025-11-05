@@ -276,19 +276,14 @@ class LinkerManagerDialog extends ComfyDialog {
                 return b.confidence - a.confidence;
             });
             
-            // Find the highest confidence match (even if not 100%)
-            const highestConfidenceMatch = sortedMatches.length > 0 ? sortedMatches[0] : null;
-            
             sortedMatches.forEach((match, matchIndex) => {
-                // Only attach listener if this match would have a button (100% or highest confidence)
-                if (match.confidence === 100 || match === highestConfidenceMatch) {
-                    const buttonId = `resolve-${missing.node_id}-${missing.widget_index}-${matchIndex}`;
-                    const resolveButton = container.querySelector(`#${buttonId}`);
-                    if (resolveButton) {
-                        resolveButton.addEventListener('click', () => {
-                            this.resolveModel(missing, match.model);
-                        });
-                    }
+                // Attach listener to all matches (all now have resolve buttons)
+                const buttonId = `resolve-${missing.node_id}-${missing.widget_index}-${matchIndex}`;
+                const resolveButton = container.querySelector(`#${buttonId}`);
+                if (resolveButton) {
+                    resolveButton.addEventListener('click', () => {
+                        this.resolveModel(missing, match.model);
+                    });
                 }
             });
         });
@@ -346,9 +341,6 @@ class LinkerManagerDialog extends ComfyDialog {
                 return b.confidence - a.confidence;
             });
             
-            // Find the highest confidence match (even if not 100%)
-            const highestConfidenceMatch = sortedMatches.length > 0 ? sortedMatches[0] : null;
-            
             for (let matchIndex = 0; matchIndex < sortedMatches.length; matchIndex++) {
                 const match = sortedMatches[matchIndex];
                 const buttonId = `resolve-${missing.node_id}-${missing.widget_index}-${matchIndex}`;
@@ -357,13 +349,11 @@ class LinkerManagerDialog extends ComfyDialog {
                 html += `<span style="color: ${match.confidence === 100 ? 'green' : 'orange'};">
                     (${match.confidence}% confidence)
                 </span>`;
-                // Show resolve button for 100% matches OR for the highest confidence match (even if not 100%)
-                if (match.confidence === 100 || match === highestConfidenceMatch) {
-                    html += ` <button id="${buttonId}" 
-                        class="model-linker-resolve-btn" style="margin-left: 8px; padding: 4px 8px;">
-                        Resolve
-                    </button>`;
-                }
+                // Show resolve button for all matches (100% or < 100%)
+                html += ` <button id="${buttonId}" 
+                    class="model-linker-resolve-btn" style="margin-left: 8px; padding: 4px 8px;">
+                    Resolve
+                </button>`;
                 html += `</li>`;
             }
             
