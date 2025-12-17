@@ -720,7 +720,7 @@ app.registerExtension({
 
             new(await import("../../scripts/ui/components/button.js")).ComfyButton({
                 id: "model-linker-button-auto",
-                title: "Open Model Linker to resolve missing models in workflow",
+                title: "Automatic resolve missing models in workflow",
                 action:  () => {
                     if (!modelLinker.dialog) {
                         modelLinker.dialog = new LinkerManagerDialog();
